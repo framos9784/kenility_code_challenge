@@ -1,8 +1,9 @@
-import { Body, Controller, Get, Request, Post, Put, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Request, Post, Put, UseGuards, UseInterceptors, UploadedFiles } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './create-user.dto';
 import { UpdateUserDto } from './update-user.dto';
 import { User } from './user.schema';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
 
 @Controller('user')
 export class UsersController {
@@ -14,8 +15,16 @@ export class UsersController {
   } 
 
   @Post('sign-up')
-  create(@Body() createUserDto: CreateUserDto): Promise<User> {
-    return this.usersService.create(createUserDto);
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      { name: 'img', maxCount: 1 }
+    ])
+  )
+  create(@Body() createUserDto: CreateUserDto,
+  @UploadedFiles()
+  profile_picture: { img?: Express.Multer.File[] },
+  ): Promise<User> {
+    return this.usersService.create(createUserDto, profile_picture);
   }
 
   @Put('update')

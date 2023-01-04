@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { MongooseModuleOptions } from '@nestjs/mongoose';
 import { isNil } from 'lodash';
+import { IAwsConfig } from 'src/interfaces/IAwsConfig';
 
 @Injectable()
 export class ApiConfigService {
@@ -59,6 +60,16 @@ export class ApiConfigService {
             'MONGO_DATABASE',
           )}?retryWrites=true&w=majority`,
       autoIndex: true
+    };
+  }
+
+  get awsS3Config(): IAwsConfig {
+    return {
+      accessKeyId: this.getString('AWS_S3_ACCESS_KEY_ID'),
+      secretAccessKey: this.getString('AWS_S3_SECRET_ACCESS_KEY'),
+      apiVersion: this.getString('AWS_S3_API_VERSION'),
+      bucketRegion: this.getString('AWS_S3_BUCKET_REGION'),
+      bucketNameProfilePictureImages: this.getString('AWS_S3_BUCKET_NAME_PROFPICTIMG'),
     };
   }
 
