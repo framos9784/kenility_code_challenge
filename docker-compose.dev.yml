@@ -1,0 +1,30 @@
+version: '3.9'
+
+services:
+  api:
+    container_name: kenility-codechall-api
+    restart: always 
+    build: ./backend
+    ports:
+      - "3000:3000"
+    links:
+      - mongo 
+    networks:
+      - node-app
+  mongo:
+    container_name: kenility-codechall-mongo
+    image: mongo:latest
+    volumes:
+      - mongodb_data:/data/db
+      - ./docker/mongo/:/docker-entrypoint-initdb.d/:ro
+    env_file:
+      - .env
+    environment:
+      - MONGO_INITDB_DATABASE=${MONGO_DATABASE}
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_USERNAME}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD}
+    ports:
+      - ${MONGO_PORT}:${MONGO_PORT}
+
+volumes:
+  mongodb_data:
