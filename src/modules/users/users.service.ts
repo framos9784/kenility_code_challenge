@@ -19,9 +19,11 @@ export class UsersService {
     return this.userModel.findOne(query);
   } 
 
-  async findAll(): Promise<any> {
-    return null;
-  } 
+  async findAll(
+  ): Promise<UserDocument[]> {
+    return this.userModel.find();
+  }
+
 
   async create(createUserDto: CreateUserDto,
     profile_picture: {

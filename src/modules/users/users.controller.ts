@@ -1,8 +1,8 @@
-import { Body, Controller, Get, Request, Post, Put, UseGuards, UseInterceptors, UploadedFiles, Param } from '@nestjs/common';
+import { Body, Controller, Get, Request, Post, Put, UseGuards, UseInterceptors, UploadedFiles, Param, ValidationPipe, UsePipes, Query } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './create-user.dto';
 import { UpdateUserDto } from './update-user.dto';
-import { User } from './user.schema';
+import { User, UserDocument } from './user.schema';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
@@ -10,11 +10,13 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 export class UsersController {
   constructor(private usersService: UsersService) {}
 
-  @UseGuards(JwtAuthGuard)
+
   @Get('find-all')
-  findAll(): Promise<any> {
+  @UseGuards(JwtAuthGuard)
+  findAll(): Promise<UserDocument[]> {
     return this.usersService.findAll();
-  } 
+  }
+
 
   @Post('sign-up')
   @UseInterceptors(
@@ -30,6 +32,7 @@ export class UsersController {
   }
 
   @Put(':id')
+  @UseGuards(JwtAuthGuard)
   @UseInterceptors(
     FileFieldsInterceptor([
       { name: 'img', maxCount: 1 }
