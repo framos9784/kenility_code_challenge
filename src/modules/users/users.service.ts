@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CreateUserDto } from './create-user.dto';
@@ -31,7 +31,7 @@ export class UsersService {
     const { password } = createUserDto;
     const hashedPassword = await bcrypt.hash(password, saltOrRounds);
 
-    const user = new this.userModel(createUserDto);
+    const user = new this.userModel({...createUserDto, password: hashedPassword});
 
     if (
       profile_picture?.img[0] &&
@@ -47,14 +47,49 @@ export class UsersService {
       ); 
     }
 
-    const createdUser = await (await this.userModel.create({...createUserDto, password: hashedPassword})).toObject();
+    if(!user.profile_picture) {
+      throw new HttpException('Upload error', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    user._created_at = new Date();
+
+    delete user.password;
+    const createdUser = await (await user.save()).toObject();
     delete createdUser.password;
     return createdUser;
   }
 
-  async update(updateUserDto: UpdateUserDto): Promise<any> {
-    console.log(updateUserDto);
-    return  null;
+  async update(
+    id: string,
+    updateUserDto: UpdateUserDto,
+    profile_picture: {
+      img?: Express.Multer.File[];
+    }): Promise<User> {
+
+    if (
+      profile_picture?.img &&
+      profile_picture?.img[0] &&
+      !this.validatorService.isImage(profile_picture.img[0].mimetype)
+    ) {
+      throw new FileNotImageException();
+    }
+  
+    if (profile_picture?.img) {
+      updateUserDto.profile_picture = await this.awsS3Service.uploadImageToNewsBucket(
+        profile_picture?.img[0],
+        profile_picture?.img[0].originalname,
+      );
+    }    
+
+    return this.userModel.findByIdAndUpdate(
+      {
+       _id: id 
+      },
+      {
+        updateUserDto
+      },
+      { new: true }
+    )
   }
 
 }
