@@ -2,6 +2,9 @@
 /dist
 /node_modules
 
+# config env
+.env
+
 #package manager lock file
 package-lock.json
 yarn.lock
