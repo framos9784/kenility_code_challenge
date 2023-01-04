@@ -1,15 +1,16 @@
 import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 import { CreateUserDto } from './create-user.dto';
 import { UpdateUserDto } from './update-user.dto';
-
-
-export type User = any;
+import { User, UserDocument } from './user.schema';
 
 @Injectable()
 export class UsersService {
+  constructor(@InjectModel(User.name) private readonly userModel: Model<UserDocument>) { }
 
-  async findOne(username: string): Promise<any> {
-    return null;
+  async findOne(query: object): Promise<User> {
+    return this.userModel.findOne(query);
   } 
 
   async findAll(): Promise<any> {
@@ -17,8 +18,7 @@ export class UsersService {
   } 
 
   async create(createUserDto: CreateUserDto): Promise<any> {
-    console.log(createUserDto);
-    return null;
+    return this.userModel.create(createUserDto);
   }
 
   async update(updateUserDto: UpdateUserDto): Promise<any> {
